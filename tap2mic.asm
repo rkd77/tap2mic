@@ -21,8 +21,8 @@ Lab8202
 	sbc a,d  ; open file               ; 8221
 	ret c                   ; 8222
 	ld (handle),a          ; 8223
-	jr nc, petla
-wypad:  ; 8231
+	jr nc, loop
+get_out:  ; 8231
 	ld a,(handle)          ; 8234
 	rst 8                   ; 8237
 	sbc a,e ; close                ; 8238
@@ -33,19 +33,19 @@ wypad:  ; 8231
 ;	ld de,(Lab8470)         ; 8245
 	
 
-petla
-	ld hl,LabDlug
+loop
+	ld hl,LabLength
 	ld bc,2
 	ld a,(handle)
 	rst 8
 	sbc a,l ; read
-	jr c, wypad
+	jr c, get_out
 	ld a,b
 	or c
 	cp 2
-	jr nz, wypad
+	jr nz, get_out
 	ld hl,START
-	ld bc,(LabDlug)
+	ld bc,(LabLength)
 	push bc
 	ld a,(handle)
 	rst 8
@@ -55,15 +55,23 @@ petla
 	dec de
 	ld ix, START + 1
 	ld a, (START)
+	or a
+	call z, delay
 	call sa_bytes
-	jr nc, wypad
-	ld hl,0
-delay
+	jr nc, get_out
+	jr loop
+delay ; around 1 second
+	ld b, 3
+delay_inner
+	ld hl, 44872
+delay_inner_2
 	dec hl
 	ld a,h
 	or l
-	jr nz,delay
-	jr petla
+	jr nz,delay_inner_2
+	djnz delay_inner
+	xor a
+	ret
 
 sa_bytes
 	ld hl, sa_ld_ret
@@ -215,7 +223,7 @@ Lab8468 ; size
 	nop
 	nop
 	nop
-LabDlug nop
+LabLength nop
 	nop
 Lab8472 nop
 	nop
